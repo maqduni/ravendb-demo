@@ -1,0 +1,51 @@
+I. Why RavenDB?:
+
+Impedance mismatch:
+http://docs.geteventstore.com/introduction/event-sourcing-basics/
+- No DB migrations necessary
+
+Sharding:
+- By data (by region, by company name, by user ip)
+- By data type (is useful when there is lack of powerful hardware, for instance if you have two servers, one with an ssd and another one with large hdd, you can shard data by their type. For that access frequency to each data tye needs to be analyzed and based on the determined frequency you can split up the data between two servers, so that less frequent data can reside on the hdd sever (historical records) and operational data can be stored on the ssd)
+
+Replication:
+- Simplicity, no need to have a DBA, doesn't take as long as SQL server replication may take
+TBD
+
+Fully RESTfull:
+- Can be queried directly from JavaScript
+
+Full-text search (http://www.make-awesome.com/2013/02/ravendb-vs-rdbms-searching/):
+- Can be easily enabled
+- Suggestions (search for 'The Loin King' and it can suggest 'The Lion King')
+- Geo-spatial search (although sql server also supports it)
+- Index Boosting
+- More Like This
+
+Perfect for Event Sourcing:
+- Because the deltas for an entity can now be stored in a single object, in SQL it would be much harder to achieve
+
+
+
+
+Memory consumption, bulk insert problems:
+- Evict() (https://jeremydmiller.com/2013/05/13/would-i-use-ravendb-again/)
+
+
+Indexing:
+- Using sort options (https://ravendb.net/docs/article-page/3.0/csharp/indexes/indexing-basics)
+
+
+
+II. Indexes:
+- Dynamic fields (https://ravendb.net/docs/article-page/3.0/csharp/indexes/using-dynamic-fields)
+- Test Indexes (https://ravendb.net/docs/article-page/3.0/csharp/indexes/testing-indexes)
+
+
+
+What is a map/reduce?
+
+excerpt from wikipedia:
+A MapReduce program is composed of a Map() procedure (method) that performs filtering and sorting (such as sorting students by first name into queues, one queue for each name) and a Reduce() method that performs a summary operation (such as counting the number of students in each queue, yielding name frequencies). 
+
+

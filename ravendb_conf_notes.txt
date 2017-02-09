@@ -1,0 +1,23 @@
+1. Does monitor allow to see I/O of an index? (Oren answered yes)
+2. is there documentation for internal API? (Didn't ask them this question)
+3. SNMP monitoring system, Zabbix was in the demo
+4. Can we use RavenServer.exe for storing temporary file chunks?
+5. Look at RavenDb embedded mode
+6. Multi-document transaction
+7. Is there a way to debug scripted patches (Oren said yes, 'output()')
+8. session.Load<dynamic>
+9. Prefetching on the db side (plus there are more config options) (Alex's comment: 'That's us :( and it's slow ir Lazy operations))
+10.Take a look at how scratch file works
+11. CQRS example
+12. Play with transactions (Alex's comment: Only on ESENT, not VORON and Oren explained in detail why it will never be in VORON)
+13. Move Quartz.NET to RavenDb
+14. Event sourcing - versioning bundle (Answer is no, they are two separate things)
+15. Look at the way they benchmark their functions (e.g. authentication)
+
+16. Elemar Jr - CQRS with event sourcing
+- Look at what he meant by anemic
+- Use operators
+- Custom type convertors in conventions
+- Look at how he checks whether doc exists in the database (Answer: Using head)
+
+17. Federiko - codealike.com, 
