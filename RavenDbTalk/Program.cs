@@ -31,7 +31,7 @@ namespace RavenDbTalk
             /*
              * Load multiple documents in a single request into session
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 var products = session.Load<Product>(new[] {
                     "products/77",
@@ -48,7 +48,7 @@ namespace RavenDbTalk
             /*
              * Load a document and include another document in a single request
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 var order = session
                     .Include<Order>(o => o.Company)
@@ -61,7 +61,7 @@ namespace RavenDbTalk
              * Load a document and include several documents of different datatypes in a single request
              */
             {
-                MultiLoadResult result = Store.Current
+                MultiLoadResult result = Store.Documents
                     .DatabaseCommands
                     .Get(ids: new[] { "orders/827" }, includes: new[] { "Company", "Employee", "ShipVia" });
 
@@ -78,7 +78,7 @@ namespace RavenDbTalk
              * There are cases when we need to retrieve multiple document results to perform a given operation.
              * RavenDB optimizes this scenario by sending multiple requests in a single round trip to the server
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 Lazy<Employee> employeeLazy = session.Advanced.Lazily.Load<Employee>("employees/1");
                 Employee employee = employeeLazy.Value;
@@ -90,7 +90,7 @@ namespace RavenDbTalk
             /*
              * Executing all pending lazy operations
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 Lazy<Employee> employeeLazy = session.Advanced.Lazily.Load<Employee>("employees/1");
                 Lazy<IEnumerable<Order>> ordersLazy = session.Query<Order>().Where(o => o.Employee == "employees/1").Take(20).Lazily();
@@ -112,7 +112,7 @@ namespace RavenDbTalk
              * 
              * * That's why me may have a memory overflow when we use GetAll method.
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 int page = 2,
                     pageSize = 10;
@@ -145,7 +145,7 @@ namespace RavenDbTalk
              *   
              * Return paged entities with Id that starts with 'orders'.
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 int page = 2,
                     pageSize = 10;
@@ -162,7 +162,7 @@ namespace RavenDbTalk
              * and rest of the key doens't begin with "6" or "7"
              * and skip all results until given key is found, return results after it
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 string keyPrefix = null;    // "1*|2*"
                 string exclude = null;      // "6*|7*"
@@ -184,7 +184,7 @@ namespace RavenDbTalk
                    PutDocument(__document_id + '/lines/', element, {'Raven-Entity-Name': 'OrderLines'})
                });
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 OrderLine[] result = session
                     .Advanced
@@ -207,7 +207,7 @@ namespace RavenDbTalk
              * A drawback (probably one of the drawbacks) that I noticed is that it doesn't respect DocumentStore caching, the results
              * are always retrieved from the server
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 int page = 2,
                     pageSize = 10;
@@ -232,7 +232,7 @@ namespace RavenDbTalk
             /*
              * Another way, using the StartsWith syntax
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 RavenPagingInformation ravenPagingInformation = new RavenPagingInformation();
                 IEnumerator<StreamResult<Order>> results = session.Advanced
@@ -268,10 +268,10 @@ namespace RavenDbTalk
              * * This means that the API ensures that you receive each document at least once.
              */
             var dsId = 1L;
-            var dsConfigs = Store.Current.Subscriptions.GetSubscriptions(0, 128);
+            var dsConfigs = Store.Documents.Subscriptions.GetSubscriptions(0, 128);
             if (!dsConfigs.Any())
             {
-                dsId = Store.Current.Subscriptions.Create(new SubscriptionCriteria
+                dsId = Store.Documents.Subscriptions.Create(new SubscriptionCriteria
                 {
                     BelongsToAnyCollection = new[] { "orders" },
                     PropertiesMatch = new Dictionary<string, RavenJToken>()
@@ -286,11 +286,11 @@ namespace RavenDbTalk
                 /*
                  * Just in case release an active connection
                  */
-                Store.Current.Subscriptions.Release(dsId);
+                Store.Documents.Subscriptions.Release(dsId);
             }
             Console.WriteLine($"Subscription {dsId}");
 
-            var orders = Store.Current.Subscriptions.Open<Order>(dsId, new SubscriptionConnectionOptions()
+            var orders = Store.Documents.Subscriptions.Open<Order>(dsId, new SubscriptionConnectionOptions()
             {
                 BatchOptions = new SubscriptionBatchOptions()
                 {
@@ -310,7 +310,7 @@ namespace RavenDbTalk
             {
                 Console.WriteLine("Stop subscription?");
                 Console.Read();
-                Store.Current.Subscriptions.Release(dsId);
+                Store.Documents.Subscriptions.Release(dsId);
             }
 
             //dsConfigs.ForEach(c =>
@@ -342,7 +342,7 @@ namespace RavenDbTalk
              *   inserted documents won't appear in the cache until your cache period expires.
              * - Put triggers will execute, but the AfterCommit triggers won't.
              */
-            using (BulkInsertOperation bulkInsert = Store.Current.BulkInsert())
+            using (BulkInsertOperation bulkInsert = Store.Documents.BulkInsert())
             {
                 for (int i = 0; i < 100 * 100; i++)
                 {
@@ -397,7 +397,7 @@ namespace RavenDbTalk
                                 "
             };
 
-            Store.Current.DatabaseCommands.UpdateByIndex("Raven/DocumentsByEntityName",
+            Store.Documents.DatabaseCommands.UpdateByIndex("Raven/DocumentsByEntityName",
                 new IndexQuery { Query = "Tag:Employees" }, patch);
 
         }
@@ -409,7 +409,7 @@ namespace RavenDbTalk
              * 
              * Add a document
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 var newProduct = new Product()
                 {
@@ -417,11 +417,11 @@ namespace RavenDbTalk
                     PricePerUnit = 10.50M
                 };
 
-                long identity = Store.Current.DatabaseCommands.NextIdentityFor("products");
+                long identity = Store.Documents.DatabaseCommands.NextIdentityFor("products");
                 session.Store(newProduct, "products/" + identity);
                 session.SaveChanges();
 
-                var docMetadata = Store.Current.DatabaseCommands.Head("products/" + identity);
+                var docMetadata = Store.Documents.DatabaseCommands.Head("products/" + identity);
                 if (docMetadata == null)
                 {
                     /*
@@ -445,7 +445,7 @@ namespace RavenDbTalk
              * In order to add scripted results to an index, we need to to put a special document with the key Raven/ScriptedIndexResults/[IndexName]
              * that will hold the Index and Delete scipts.
              */
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 session.Store(new ScriptedIndexResults
                 {
@@ -528,7 +528,7 @@ namespace RavenDbTalk
                 }
             };
 
-            BatchResult[] results = Store.Current.DatabaseCommands.Batch(batch);
+            BatchResult[] results = Store.Documents.DatabaseCommands.Batch(batch);
         }
 
 
@@ -550,14 +550,14 @@ namespace RavenDbTalk
              * - ForDocumentsOfType
              * - ForDocumentsStartingWith
              */
-            IDisposable subscribtion = Store.Current.Changes()
+            IDisposable subscribtion = Store.Documents.Changes()
                 .ForAllDocuments()
                 .Subscribe(change => Console.WriteLine($"Changes API -> {change.Type} {change.Id}"));
             Console.WriteLine("Subscribed to changes for all documents");
 
             try
             {
-                using (var session = Store.Current.OpenSession())
+                using (var session = Store.Documents.OpenSession())
                 {
                     /*
                      * Add new document
@@ -571,7 +571,7 @@ namespace RavenDbTalk
                         PricePerUnit = 10.50M
                     };
 
-                    long identity = Store.Current.DatabaseCommands.NextIdentityFor("products");
+                    long identity = Store.Documents.DatabaseCommands.NextIdentityFor("products");
                     session.Store(newProduct, "products/" + identity);
                     //session.Store(newProduct, "products/");
                     //string productId = session.Advanced.GetDocumentId(newProduct);
@@ -615,7 +615,7 @@ namespace RavenDbTalk
                             }
                         }
                     };
-                    Store.Current.DatabaseCommands.Batch(patchBatch);
+                    Store.Documents.DatabaseCommands.Batch(patchBatch);
 
 
                     /*
@@ -645,7 +645,7 @@ namespace RavenDbTalk
              * - ForIndex
              * - ForAllIndexes
              */
-            IDisposable subscription = Store.Current
+            IDisposable subscription = Store.Documents
             .Changes()
             .ForIndex("Orders/Totals")
             .Subscribe(
@@ -700,7 +700,7 @@ namespace RavenDbTalk
             /*
              * ForAllTransformers
              */
-            IDisposable subscription = Store.Current
+            IDisposable subscription = Store.Documents
             .Changes()
             .ForAllTransformers()
             .Subscribe(
@@ -737,9 +737,9 @@ namespace RavenDbTalk
             /*
              * ForBulkInsert
              */
-            using (BulkInsertOperation bulkInsert = Store.Current.BulkInsert())
+            using (BulkInsertOperation bulkInsert = Store.Documents.BulkInsert())
             {
-                IDisposable subscription = Store.Current
+                IDisposable subscription = Store.Documents
                     .Changes()
                     .ForBulkInsert(bulkInsert.OperationId)
                     .Subscribe(change =>
@@ -791,7 +791,7 @@ namespace RavenDbTalk
              * - ForDataSubscription
              * - ForAllDataSubscriptions
              */
-            IDisposable subscription = Store.Current
+            IDisposable subscription = Store.Documents
             .Changes()
             .ForAllDataSubscriptions()
             .Subscribe(
@@ -837,7 +837,7 @@ namespace RavenDbTalk
              * 
              * - ForAllReplicationConflicts
              */
-            IDisposable subscription = Store.Current
+            IDisposable subscription = Store.Documents
                 .Changes()
                 .ForAllReplicationConflicts()
                 .Subscribe(conflict =>
@@ -875,7 +875,7 @@ namespace RavenDbTalk
              * notification for these data from the server.
              */
             // TODO: Invalidate on SaveChanges documentStore.Conventions.ShouldSaveChangesForceAggressiveCacheCheck = true;
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             using (session.Advanced.DocumentStore.AggressivelyCacheFor(TimeSpan.FromMinutes(5)))
             {
                 int page = 2,
@@ -890,7 +890,7 @@ namespace RavenDbTalk
                 session.Advanced.Clear();
             }
 
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             using (session.Advanced.DocumentStore.AggressivelyCacheFor(TimeSpan.FromMinutes(5)))
             {
                 int page = 2,
@@ -905,7 +905,7 @@ namespace RavenDbTalk
                 session.Advanced.Clear();
             }
 
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             {
                 int page = 2,
                     pageSize = 10;
@@ -919,7 +919,7 @@ namespace RavenDbTalk
                 session.Advanced.Clear();
             }
 
-            using (var session = Store.Current.OpenSession())
+            using (var session = Store.Documents.OpenSession())
             using (session.Advanced.DocumentStore.AggressivelyCacheFor(TimeSpan.FromMinutes(5)))
             {
                 int page = 2,
