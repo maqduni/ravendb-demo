@@ -38,5 +38,11 @@ namespace RavenDbTalk
 
             return store;
         }
+
+        public static void Dispose()
+        {
+            Documents.Dispose();
+            Files.Dispose();
+        }
     }
 }

@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Entities\DefaultEntities.cs" />
     <Compile Include="Entities\CustomEntities.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Store.cs" />

@@ -21,6 +21,11 @@ namespace RavenDbTalk
              * Run functions from here if you don't have a test runner in VisualStudio
              */
 
+
+
+            // Don't forget to dispose the document / files store
+            Store.Dispose();
+
             Console.WriteLine("Done!");
             Console.Read();
         }
