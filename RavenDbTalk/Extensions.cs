@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RavenDbTalk
@@ -31,11 +32,10 @@ namespace RavenDbTalk
 
     public static class RavenFsExtensions
     {
-        private static readonly char[] TrimChars = { ' ', '/' };
-
         public static string CombinePaths(this IFilesStore store, params string[] paths)
         {
-            return paths.Aggregate(string.Empty, (combinedPath, path) => $"{combinedPath}{store.Conventions.IdentityPartsSeparator}{path.Trim(TrimChars)}");
+            var trimChars = Regex.Escape(store.Conventions.IdentityPartsSeparator);
+            return paths.Aggregate(string.Empty, (combinedPath, path) => $"{combinedPath}{store.Conventions.IdentityPartsSeparator}{Regex.Replace(path.Trim(), $"^(\\s*{trimChars}\\s*)+|(\\s*{trimChars}\\s*)+$", "")}");
         }
     }
 }
