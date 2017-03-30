@@ -35,7 +35,18 @@ namespace RavenDbTalk
         public static string CombinePaths(this IFilesStore store, params string[] paths)
         {
             var trimChars = Regex.Escape(store.Conventions.IdentityPartsSeparator);
-            return paths.Aggregate(string.Empty, (combinedPath, path) => $"{combinedPath}{store.Conventions.IdentityPartsSeparator}{Regex.Replace(path, $"^(\\s*{trimChars}\\s*)+|(\\s*{trimChars}\\s*)+$", "")}");
+            return AggregatePaths(paths, store.Conventions.IdentityPartsSeparator, trimChars);
+        }
+
+        public static string CombinePaths(this IAsyncFilesCommands asyncCommands, params string[] paths)
+        {
+            var trimChars = Regex.Escape(asyncCommands.Conventions.IdentityPartsSeparator);
+            return AggregatePaths(paths, asyncCommands.Conventions.IdentityPartsSeparator, trimChars);
+        }
+
+        private static string AggregatePaths(string[] paths, string identityPartsSeparator, string trimChars)
+        {
+            return paths.Aggregate(string.Empty, (combinedPath, path) => $"{combinedPath}{(string.IsNullOrEmpty(combinedPath) ? "" : identityPartsSeparator)}{Regex.Replace(path, $"^(\\s*{trimChars}\\s*)+|(\\s*{trimChars}\\s*)+$", "")}");
         }
     }
 }
