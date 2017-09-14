@@ -3,12 +3,15 @@ using Raven.Abstractions.Commands;
 using Raven.Abstractions.Data;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.FileSystem;
+using Raven.Client.FileSystem.Shard;
 using Raven.Json.Linq;
 using RavenDbTalk.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RavenDbTalk
@@ -22,6 +25,22 @@ namespace RavenDbTalk
              */
 
 
+            var shards = new Dictionary<string, IAsyncFilesCommands>
+            {
+                {"Europe", new AsyncFilesServerClient("http://localhost:8080", "ShardEurope")},
+                {"Asia", new AsyncFilesServerClient("http://localhost:8080", "ShardAsia")},
+            };
+
+            var shardStrategy = new ShardStrategy(shards)
+            {
+                /*
+                ShardAccessStrategy = ...
+                ShardResolutionStrategy = ...
+                ModifyFileName = ...
+                */
+            };
+
+            var shardedCommands = new AsyncShardedFilesServerClient(shardStrategy);
 
             // Don't forget to dispose the document / files store
             Store.Dispose();
